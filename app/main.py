@@ -36,15 +36,14 @@ async def produce_response(request: tuple) -> bytes:
                 fileName = pathArray[2]
                 path = directory + fileName
                 if os.path.isfile(path):
-                    print(f"----file found-----: {path}")
                     with open(path, "rb") as file:
                         response_content = file.read()
                         contentLength = len(response_content)
                         response_content = (
-                            f"HTTP/1.1 200 OK{CRLF}Content-Type: application/octet-stream{CRLF}Content-Length: {contentLength}{CRLF}{response_content}{CRLF}"
+                            f"HTTP/1.1 200 OK{CRLF}Content-Type: application/octet-stream{CRLF}Content-Length: {contentLength}{CRLF}{CRLF}{response_content}"
                         )
                         print(f"----file content-----: {response_content}")
-                        return response_content.encode()
+                        return response_content.encode("utf-8")
                 else:
                     http_status = "404 Not Found"
             else:
@@ -53,9 +52,9 @@ async def produce_response(request: tuple) -> bytes:
             http_status = "404 Not Found"
         headers = (
             f"HTTP/1.1 {http_status}{CRLF}"
-            f"Content-Type: text/plain{CRLF}Content-Length: {len(response_content)}{CRLF}")
-        response_template = f"{headers}{CRLF}{response_content}(CRLF)"
-        return response_template.encode()
+            f"Content-Type: text/plain{CRLF}Content-Length: {len(response_content)}{CRLF}{CRLF}")
+        response_template = f"{headers}{response_content}"
+        return response_template.encode("utf-8")
        
 async def main():
     server = await asyncio.start_server(connection_handler, "localhost", 4221)
