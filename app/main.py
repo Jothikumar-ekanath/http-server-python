@@ -14,7 +14,7 @@ async def connection_handler(
         while True:
             payload = await reader.read(1024)
             print(f"received command: {payload}")
-            writer.write("200".encode())
+            writer.write(b"HTTP/1.1 200 OK\r\n\r\n")
             await writer.drain()
     except Exception as e:
         print(f"An error occurred for {addr}: {e}")
