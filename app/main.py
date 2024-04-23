@@ -13,10 +13,22 @@ async def parse_http_request(payload: bytes) -> tuple:
 
 async def produce_response(request: tuple) -> bytes:
     method, path, headers = request
-    if method == "GET" and path == "/":
-        print("GET /")
-        return b"HTTP/1.1 200 OK\r\n\r\n"
-    return b"HTTP/1.1 404 Not Found\r\n\r\n"
+    http_status = "200 OK"
+    response_content = ""
+  
+    if method == "GET":
+        if path == "/":
+            pass
+        elif  "/echo/" in path:
+            path_parts = path.split("/echo/")
+            response_content = path_parts[1]
+        else:
+            http_status = "404 Not Found"
+        headers = (
+            f"HTTP/1.1 {http_status}{CRLF}"
+            f"Content-Type: text/plain{CRLF}Content-Length: {len(response_content)}{CRLF}")
+        response_template = f"{headers}{CRLF}{response_content}(CRLF)"
+        return response_template.encode()
        
 async def main():
     server = await asyncio.start_server(connection_handler, "localhost", 4221)
