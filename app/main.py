@@ -1,7 +1,7 @@
 import asyncio
 
 CRLF = "\r\n"
-async def parse_http_request(payload: bytes) -> list:
+async def parse_http_request(payload: bytes) -> tuple:
     lines = payload.decode().split(CRLF)
     method, path, _ = lines[0].split(" ")
     headers = {}
@@ -9,12 +9,13 @@ async def parse_http_request(payload: bytes) -> list:
         if line:
             key, value = line.split(": ")
             headers[key] = value
-    return [method, path, headers]
+    return (method, path, headers)
 
-async def produce_response(request: list) -> bytes:
+async def produce_response(request: tuple) -> bytes:
     method, path, headers = request
     if method == "GET" and path == "/":
-        return b"HTTP/1.1 200 OK\r\n\r\n",
+        print("GET /")
+        return b"HTTP/1.1 200 OK\r\n\r\n"
     return b"HTTP/1.1 404 Not Found\r\n\r\n"
        
 async def main():
@@ -29,7 +30,7 @@ async def connection_handler(
         addr = writer.get_extra_info("peername")
         while True:
             payload = await reader.read(1024)
-            print(f"received command: {payload}")
+            print(f"received request: {payload}")
             if not payload:
                 break
             request = await parse_http_request(payload)
