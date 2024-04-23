@@ -36,6 +36,7 @@ async def produce_response(request: tuple) -> bytes:
                 fileName = pathArray[2]
                 path = directory + fileName
                 if os.path.isfile(path):
+                    print(f"----file found-----: {path}")
                     with open(path, "rb") as file:
                         response_content = file.read()
                         contentLength = len(response_content)
