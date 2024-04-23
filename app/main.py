@@ -22,6 +22,8 @@ async def produce_response(request: tuple) -> bytes:
         elif  "/echo/" in path:
             path_parts = path.split("/echo/")
             response_content = path_parts[1]
+        elif "/user-agent" in path:
+            response_content = headers["User-Agent"]
         else:
             http_status = "404 Not Found"
         headers = (
