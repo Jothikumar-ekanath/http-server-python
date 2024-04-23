@@ -4,6 +4,8 @@ import os
 
 CRLF = "\r\n"
 args = None
+
+
 async def parse_http_request(payload: bytes) -> tuple:
     lines = payload.decode().split(CRLF)
     method, path, _ = lines[0].split(" ")
@@ -15,16 +17,15 @@ async def parse_http_request(payload: bytes) -> tuple:
     return (method, path, headers)
 
 
-
 async def produce_response(request: tuple) -> bytes:
     method, path, headers = request
     http_status = "200 OK"
     response_content = ""
-  
+
     if method == "GET":
         if path == "/":
             pass
-        elif  "/echo/" in path:
+        elif "/echo/" in path:
             path_parts = path.split("/echo/")
             response_content = path_parts[1]
         elif "/user-agent" in path:
@@ -40,7 +41,8 @@ async def produce_response(request: tuple) -> bytes:
                         response_content = file.read()
                         contentLength = len(response_content)
                         response_content = (
-                            f"HTTP/1.1 200 OK{CRLF}Content-Type: application/octet-stream{CRLF}Content-Length: {contentLength}{CRLF}{CRLF}{response_content}"
+                            f"HTTP/1.1 200 OK{CRLF}Content-Type: application/octet-stream{
+                                CRLF}Content-Length: {contentLength}{CRLF}{CRLF}{response_content.decode()}"
                         )
                         print(f"----file content-----: {response_content}")
                         return response_content.encode("utf-8")
@@ -55,19 +57,21 @@ async def produce_response(request: tuple) -> bytes:
             f"Content-Type: text/plain{CRLF}Content-Length: {len(response_content)}{CRLF}{CRLF}")
         response_template = f"{headers}{response_content}"
         return response_template.encode("utf-8")
-       
+
+
 async def main():
     server = await asyncio.start_server(connection_handler, "localhost", 4221)
     print(f"Server running on {server.sockets[0].getsockname()}")
     async with server:
         await server.serve_forever()
 
+
 async def connection_handler(
-    reader: asyncio.StreamReader, writer: asyncio.StreamWriter):    
+        reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
     try:
         addr = writer.get_extra_info("peername")
         while True:
-            #print(f"reading.....")
+            # print(f"reading.....")
             payload = await reader.read(1024)
             print(f"received request: {payload}")
             if not payload:
@@ -81,7 +85,7 @@ async def connection_handler(
     finally:
        # print(f"Closing the connection with {addr}")
         writer.close()
-   
+
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
