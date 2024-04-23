@@ -32,13 +32,14 @@ async def produce_response(request: tuple) -> bytes:
         elif "/files/" in path:
             pathArray = path.split("/")
             if len(pathArray) == 3:
-                directory = args.directory + "/"
+                directory = args.directory
                 fileName = pathArray[2]
                 path = directory + fileName
                 if os.path.isfile(path):
                     print(f"----file found-----: {path}")
                     with open(path, "rb") as file:
                         response_content = file.read()
+                        print(f"----file content-----: {response_content}")
                         contentLength = len(response_content)
                         response_content = (
                             f"HTTP/1.1 200 OK{CRLF}Content-Type: application/octet-stream{CRLF}Content-Length: {contentLength}{CRLF}{response_content}{CRLF}"
