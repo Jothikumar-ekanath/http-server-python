@@ -1,6 +1,9 @@
 import asyncio
+import argparse
+import os
 
 CRLF = "\r\n"
+args = None
 async def parse_http_request(payload: bytes) -> tuple:
     lines = payload.decode().split(CRLF)
     method, path, _ = lines[0].split(" ")
@@ -26,6 +29,24 @@ async def produce_response(request: tuple) -> bytes:
             response_content = path_parts[1]
         elif "/user-agent" in path:
             response_content = headers["User-Agent"]
+        elif "/files/" in path:
+            pathArray = path.split("/")
+            if len(pathArray) == 3:
+                directory = args.directory + "/"
+                fileName = pathArray[2]
+                path = directory + fileName
+                if os.path.isfile(path):
+                    with open(path, "rb") as file:
+                        response_content = file.read()
+                        contentLength = len(response_content)
+                        response_content = (
+                            f"HTTP/1.1 200 OK{CRLF}Content-Type: application/octet-stream{CRLF}Content-Length: {contentLength}{CRLF}{response_content}{CRLF}"
+                        )
+                        return response_content.encode()
+                else:
+                    http_status = "404 Not Found"
+            else:
+                http_status = "404 Not Found"
         else:
             http_status = "404 Not Found"
         headers = (
@@ -45,6 +66,7 @@ async def connection_handler(
     try:
         addr = writer.get_extra_info("peername")
         while True:
+            #print(f"reading.....")
             payload = await reader.read(1024)
             print(f"received request: {payload}")
             if not payload:
@@ -56,11 +78,15 @@ async def connection_handler(
     except Exception as e:
         print(f"An error occurred for {addr}: {e}")
     finally:
+       # print(f"Closing the connection with {addr}")
         writer.close()
    
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--directory", help="serving files dir")
+    args = parser.parse_args()
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
