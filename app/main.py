@@ -39,11 +39,11 @@ async def produce_response(request: tuple) -> bytes:
                     print(f"----file found-----: {path}")
                     with open(path, "rb") as file:
                         response_content = file.read()
-                        print(f"----file content-----: {response_content}")
                         contentLength = len(response_content)
                         response_content = (
                             f"HTTP/1.1 200 OK{CRLF}Content-Type: application/octet-stream{CRLF}Content-Length: {contentLength}{CRLF}{response_content}{CRLF}"
                         )
+                        print(f"----file content-----: {response_content}")
                         return response_content.encode()
                 else:
                     http_status = "404 Not Found"
