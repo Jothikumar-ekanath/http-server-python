@@ -44,16 +44,14 @@ async def produce_response(request: tuple) -> bytes:
         if "Accept-Encoding" in headers and "gzip" in headers["Accept-Encoding"]:
             response_content = gzip.compress(response_content.encode())
         response_headers = prepare_response_headers(http_status, len(response_content), headers)
-        response_template = response_headers.encode()+response_content
-        return response_template
+        response_template = f"{response_headers}{response_content}"
+        return response_template.encode()
 
 
 def prepare_response_headers(http_status, response_content_len, req_headers) -> str:
     res_headers = f"HTTP/1.1 {http_status}{CRLF}Content-Type: text/plain{CRLF}Content-Length: {response_content_len}"
     if 'Accept-Encoding' in req_headers:
         encoding = req_headers['Accept-Encoding']
-        if ',' in encoding:
-            encoding = encoding.split(',')
         if 'gzip' in encoding:
             res_headers += f"{CRLF}Content-Encoding: gzip"
     res_headers += f"{CRLF}{CRLF}"
