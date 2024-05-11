@@ -43,9 +43,11 @@ async def produce_response(request: tuple) -> bytes:
             http_status = "404 Not Found"
         if "Accept-Encoding" in headers and "gzip" in headers["Accept-Encoding"]:
             response_content = gzip.compress(response_content.encode())
+        else:
+            response_content = response_content.encode()
         response_headers = prepare_response_headers(http_status, len(response_content), headers)
-        response_template = f"{response_headers}{response_content}"
-        return response_template.encode()
+        response_template = f"{response_headers}".encode()+response_content
+        return response_template
 
 
 def prepare_response_headers(http_status, response_content_len, req_headers) -> str:
